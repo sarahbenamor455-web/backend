@@ -1,42 +1,44 @@
 const { DataTypes } = require('sequelize')
-const {Database}=require('sequelize')
-const{db}=require('../utils/db')
+const { Database } = require('sequelize')
+const { db } = require('../utils/db')
 
-const user=db.define("users",{
-    firstname:{
-        type:DataTypes.STRING,
-        allowNull:false
+const user = db.define("users", {
+    firstname: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-    lastname:{
-        type:DataTypes.STRING,
-        allowNull:false
+    lastname: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-    email:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        unique:true
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     },
-    password:{
-        type:DataTypes.STRING,
-        allowNull:false
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-    date_of_graduation:{
-        type:DataTypes.DATETIME,
-        allowNull:false,
+    date_of_graduation: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+
+
     },
     profilepic: {
-    type: DataType,TEXT,
-    allowNull: true,
-    defaultValue: null, 
+        type: DataTypes.TEXT('long'),
+        allowNull: true,
+
     },
-    role:{
-        type:DataTypes.ENUM("student","alumni"),
-        defaultValue:'student',
-        allowNull:false
+    role: {
+        type: DataTypes.ENUM("student", "alumni", "admin"),
+        defaultValue: 'student',
+        allowNull: true
     },
-    isVerified:{
-        type:DataTypes.BOOLEAN,
-        defaultValue:false
+    isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 })
-module.exports=user
+module.exports = user
