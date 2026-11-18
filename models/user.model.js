@@ -36,6 +36,14 @@ const user = db.define("users", {
         defaultValue: 'student',
         allowNull: true
     },
+    industry: {
+    type: DataTypes.STRING,
+    allowNull: true
+    },
+    bio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+    },
     isVerified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
