@@ -13,7 +13,7 @@ async function authConnection(req, res,next) {
                 message: 'User not authenticated'
             });
         }
-
+        
         const connection = await Connection.findOne({
             where: {
                 id: connectionId,

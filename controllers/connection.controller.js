@@ -1,4 +1,6 @@
 const Connection=require('../models/connection.model')
+const { Op } = require('sequelize')
+
 
 const sendConnection = async (req, res) => {
     try {
@@ -95,4 +97,60 @@ const acpref = async (req, res) => {
             message: error.message })
     }
 }
-module.exports = {sendConnection,acpref};
+const getMyConnections = async (req, res) => {
+    try {
+        const userId = Number(req.user.id);
+
+        const connections = await Connection.findAll({
+            where: {
+                status: 'Accepted',
+                [Op.or]: [
+                    { studentId: userId },
+                    { alumniId: userId }
+                ]
+            },
+            order: [['updatedAt', 'DESC']]
+        });
+
+        const conversations = await Promise.all(
+            connections.map(async (connection) => {
+
+                const otherUserId =
+                    Number(connection.studentId) === userId
+                        ? connection.alumniId
+                        : connection.studentId;
+
+                const otherUser = await User.findByPk(otherUserId, {
+                    attributes: [
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'role'
+                    ]
+                });
+
+                if (!otherUser) {
+                    return null;
+                }
+
+                return {
+                    connectionId: connection.id,
+                    status: connection.status,
+                    user: otherUser
+                };
+            })
+        );
+
+        return res.status(200).json(
+            conversations.filter(Boolean)
+        );
+
+    } catch (error) {
+        console.error('Get connections error:', error);
+
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+}
+module.exports = {sendConnection,acpref,getMyConnections};

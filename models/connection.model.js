@@ -20,6 +20,13 @@ const Connection = db.define('Connection', {
     defaultValue: 'Pending',
     allowNull: false
   }
+},{
+    indexes: [
+        {
+            unique: true,
+            fields: ['studentId', 'alumniId']
+        }
+    ]
 }
 );
 
