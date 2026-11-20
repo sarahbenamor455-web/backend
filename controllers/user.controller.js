@@ -1,6 +1,6 @@
 const { generateToken } = require('../utils/generateToken')
 const bcrypt = require('bcryptjs')
-const User = require('../models/User.model')
+const User = require('../models/user.model')
 const { isEduEmail } = require('../utils/emailValidator')
 const Availability = require('../models/Availability.model')
 

@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize')
 const { db } = require('../utils/db')
-const User = require('./User.model')
+const User = require('./user.model')
 
 const Availability = db.define('availability', {
     user_id: {

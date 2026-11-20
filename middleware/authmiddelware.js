@@ -1,15 +1,14 @@
 const jwt = require('jsonwebtoken')
-const User = require('../models/User.model') 
+const User = require('../models/user.model') 
 
 const authmiddelware = async (req, res, next) => {
     try {
-        const header = req.headers.authorization
+        const token = req.cookies?.accessToken || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null)
 
-        if (!header || !header.startsWith('Bearer ')) {
+        if (!token) {
             return res.status(401).json({ message: 'user not connected' })
         }
 
-        const token = header.split(' ')[1]
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
         const user = await User.findByPk(decoded.id)

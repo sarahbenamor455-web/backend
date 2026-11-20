@@ -1,6 +1,6 @@
 const { Op, fn, col, literal } = require('sequelize')
 const { db } = require('../utils/db')
-const User = require('../models/User.model')
+const User = require('../models/user.model')
 require('../models/Availability.model') 
 
 const ALLOWED_SORTS = ['relevance', 'name', 'newest']
