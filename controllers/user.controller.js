@@ -2,18 +2,7 @@ const { generateToken } = require('../utils/generateToken')
 const bcrypt = require('bcryptjs')
 const User = require('../models/User.model')
 const { isEduEmail } = require('../utils/emailValidator')
-
-// One place that builds the user sent to the frontend (never includes the password)
-const formatUser = (user) => ({
-    id: user.id,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    email: user.email,
-    role: user.role,
-    isVerified: user.isVerified,
-    profilepic: user.profilepic,
-    date_of_graduation: user.date_of_graduation
-})
+const Availability = require('../models/Availability.model')
 
 const register = async (req, res) => {
     try {
@@ -84,9 +73,13 @@ const login = async (req, res) => {
 
         const token = generateToken(user)
 
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
         return res.status(200).json({
             message: "Login successful",
-            token,
             user: formatUser(user)
         })
     } catch (error) {
@@ -94,6 +87,18 @@ const login = async (req, res) => {
         return res.status(500).json({ message: "Server error" })
     }
 }
+const formatUser = (user) => ({
+    id: user.id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
+    profilepic: user.profilepic,
+    industry: user.industry,
+    bio: user.bio,
+    date_of_graduation: user.date_of_graduation
+})
 
 const getMe = async (req, res) => {
     try {
@@ -121,5 +126,72 @@ const getAllUsers = async (req, res) => {
         return res.status(500).json({ message: "Server error" })
     }
 }
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const SLOTS = ['Morning', 'Afternoon', 'Evening']
 
-module.exports = { register, login, getMe, getAllUsers }
+const updateProfile = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.id)
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        const { firstname, lastname, industry, bio, date_of_graduation } = req.body
+
+    
+        let slots = null
+        if (req.body.availability !== undefined) {
+            try {
+                slots = JSON.parse(req.body.availability)
+            } catch {
+                return res.status(400).json({ message: "availability must be valid JSON" })
+            }
+            const invalid = !Array.isArray(slots) ||
+                slots.some(s => !DAYS.includes(s.day_of_week) || !SLOTS.includes(s.time_slot))
+            if (invalid) {
+                return res.status(400).json({ message: "Invalid availability" })
+            }
+        }
+        if (req.file) {
+            user.profilepic = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+        }
+        if (firstname) user.firstname = firstname
+        if (lastname) user.lastname = lastname
+        if (industry !== undefined) user.industry = industry.trim() || null
+        if (bio !== undefined) user.bio = bio.trim() || null
+        if (date_of_graduation !== undefined) user.date_of_graduation = date_of_graduation || null
+        await user.save()
+        if (slots) {
+            await Availability.destroy({ where: { user_id: user.id } })
+            await Availability.bulkCreate(
+                slots.map(s => ({ user_id: user.id, day_of_week: s.day_of_week, time_slot: s.time_slot }))
+            )
+        }
+
+        const availability = await Availability.findAll({
+            where: { user_id: user.id },
+            attributes: ['day_of_week', 'time_slot'],
+            raw: true
+        })
+
+        return res.status(200).json({
+            message: "Profile updated",
+            user: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                role: user.role,
+                isVerified: user.isVerified,
+                profilepic: user.profilepic,
+                industry: user.industry,
+                bio: user.bio,
+                date_of_graduation: user.date_of_graduation,
+                availability
+            }
+        })
+    } catch (error) {
+        return res.status(500).json({ message: "Server error", error: error.message })
+    }
+}
+module.exports = { register, login, getMe, getAllUsers, updateProfile }

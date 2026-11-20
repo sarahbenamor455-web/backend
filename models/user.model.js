@@ -37,12 +37,12 @@ const user = db.define("users", {
         allowNull: true
     },
     industry: {
-    type: DataTypes.STRING,
-    allowNull: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     bio: {
-    type: DataTypes.TEXT,
-    allowNull: true
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     isVerified: {
         type: DataTypes.BOOLEAN,

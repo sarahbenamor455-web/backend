@@ -9,6 +9,7 @@ app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
 }));
+
 app.use('/api/users', require('./routes/search.routes'))
 
 
